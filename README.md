@@ -3,8 +3,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Type-Chrome_Extension-blue?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Tech-RAG | FAISS | Redis | FastAPI-purple?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Bonus-RAG-red?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Tech- FAISS | FastAPI-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Bonus- RAG | REDIS-red?style=for-the-badge" />
 </p>
 
 ---
