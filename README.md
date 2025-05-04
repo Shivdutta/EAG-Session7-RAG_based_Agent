@@ -173,6 +173,122 @@ uvicorn fastapi_server:app --reload
 
 ---
 
+
+## 🧠 Code Architecture Deep Dive
+
+### 📁 `agent.py` – RAG Agent Logic  
+This is the **brain** of the system. It defines a class like `RAGAgent` that:  
+- Receives user queries  
+- Retrieves relevant information using semantic search (e.g., via FAISS or Redis)  
+- Integrates retrieved context with the query  
+- Uses an LLM (OpenAI or local) to generate a final response  
+
+**Key functions**:  
+- `run(query)`: Main method to process user input  
+- `retrieve_context(query)`: Finds relevant vector chunks  
+- `generate_response(context, query)`: Creates a contextual answer using the LLM  
+
+---
+
+### 📁 `memory.py` – Conversation Memory Management  
+Handles session persistence and continuity.  
+- Tracks previous interactions  
+- Uses Redis or in-memory storage  
+- Critical for multi-turn chat context  
+
+**Key features**:  
+- `MemoryBuffer` or `SessionManager` classes  
+- Redis integration for scalable, persistent memory  
+- Enables context carry-over and temporal awareness  
+
+---
+
+### 📁 `perception.py` – Input Understanding & Preprocessing  
+Prepares user input before retrieval or generation.  
+- Normalizes and cleans up text  
+- Strips unnecessary HTML  
+- May extract key phrases or topics  
+
+**Impact**: Improves semantic search accuracy and LLM relevance  
+
+---
+
+### 📁 `decision.py` – Agent Planning & Reasoning  
+Acts as the agent's **planner**:  
+- Determines whether to clarify, search, or answer  
+- Can rank retrieved content or defer decisions  
+- Integrates structured logic or heuristics  
+
+**Example behaviors**:  
+- Follows up on ambiguous queries  
+- Weighs conflicting context sources  
+
+---
+
+### 📁 `action.py` – Execution Layer  
+Interfaces with external systems:  
+- Opens and scrolls web pages  
+- Triggers browser actions or highlights content  
+- Executes commands based on agent decisions  
+
+**Possible actions**:  
+- Navigate and scroll to matched text  
+- Save or pin relevant info  
+
+---
+
+### 📁 `mcp_tools.py` – Multi-Component Processing Utilities  
+A shared utility layer that supports all modules.  
+
+**Key utilities**:  
+- `split_into_chunks(text, max_tokens)`  
+- `count_tokens(text)`  
+- `sanitize_input(raw_html)`  
+
+Forms the backbone of processes like `Perceive → Chunk → Embed → Store`  
+
+---
+
+### 🛠️ MCP Tools – Modular Commands for Document Intelligence  
+
+#### 🔍 `@mcp.tool()` – Exposed Utilities  
+
+```python
+search_documents(query: str) -> list[str]
+```
+
+- Embeds the query  
+- Searches the FAISS index for top matches  
+- Returns context snippets with metadata  
+
+**Example**:  
+```yaml
+"How to install X tool..."
+[Source: guide.md, URL: https://example.com/install, ID: guide_1]
+```
+
+---
+
+```python
+process_documents()
+```
+
+- Ingests and embeds local files  
+- Converts Markdown, PDF, HTML  
+- Skips unchanged files via hashing  
+- Outputs to `index.bin` + `metadata.json`  
+
+---
+
+```python
+process_html(url: str, title: str, text: str = "")
+```
+
+- Adds browser content on-the-fly  
+- Chunks and embeds web text  
+- Avoids reprocessing via hash deduplication  
+
+
 ## 📎 References
 
 - [Nomic Embeddings](https://docs.nomic.ai)
