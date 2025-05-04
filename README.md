@@ -263,8 +263,7 @@ search_documents(query: str) -> list[str]
 - Searches the FAISS index for top 5 similar chunks
 - Retrieves context snippets with associated metadata (doc name, URL, chunk ID)
 - Generates a context-aware answer using Gemini LLM
-- Returns the result in strict format: 
-  FINAL_ANSWER: ["<summary answer>", "<source URL>"]
+- Returns the result in strict format:   FINAL_ANSWER: ["<summary answer>", "<source URL>"]
 
 ---
 
