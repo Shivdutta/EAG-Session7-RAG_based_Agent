@@ -261,9 +261,12 @@ Forms the backbone of processes like `Perceive → Chunk → Embed → Store`
 ```python
 search_documents(query: str) -> list[str]
 ```
-- Embeds the query  
-- Searches the FAISS index for top matches  
-- Returns context snippets with metadata  
+- Embeds the query using a vector model
+- Searches the FAISS index for top 5 similar chunks
+- Retrieves context snippets with associated metadata (doc name, URL, chunk ID)
+- Generates a context-aware answer using Gemini LLM
+- Returns the result in strict format: 
+  FINAL_ANSWER: ["<summary answer>", "<source URL>"]
 
 ---
 
