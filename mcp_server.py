@@ -62,24 +62,81 @@ def mcp_log(level: str, message: str) -> None:
 #         return results
 #     except Exception as e:
 #         return [f"ERROR: Failed to search: {str(e)}"]
-    
+
+from dotenv import load_dotenv
+from google import genai
+
+load_dotenv()
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+# LLM generate using Gemini
+def llm_generate(prompt: str) -> str:
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+        raw = response.text.strip()
+        return raw
+    except Exception as e:
+        log("perception", f"LLM generation failed: {str(e)}")
+        return f"ERROR: LLM failed to generate response: {str(e)}"
+
+# Main RAG function
 @mcp.tool()
-def search_documents(query: str) -> list[str]:
-    """Search for relevant content from uploaded documents."""
+def search_documents(query: str) -> str:
+    """Perform RAG: Retrieve relevant content and generate an answer using Gemini."""
     ensure_faiss_ready()
     mcp_log("SEARCH", f"Query: {query}")
     try:
+        # Load FAISS index and metadata
         index = faiss.read_index(str(ROOT / "faiss_index" / "index.bin"))
         metadata = json.loads((ROOT / "faiss_index" / "metadata.json").read_text())
+
+        # Embed query and perform search
         query_vec = get_embedding(query).reshape(1, -1)
         D, I = index.search(query_vec, k=5)
+
+        # Gather top-k chunks
+        #retrieved_chunks = []
+        #sources = []
         results = []
         for idx in I[0]:
             data = metadata[idx]
             results.append(f"{data['chunk']}\n[Source: {data['doc']}, URL: {data.get('url','')} , ID: {data['chunk_id']}]")
-        return results
+
+        # Combine context
+        context = "\n\n".join(results)
+
+        # Generate answer using Gemini
+        prompt = f"""Use the following context to answer the question:\n\n{context}\n\nQuestion: {query}\nAnswer:  . Start with the answer directly. - EXACTLY FOLLOW THIS FORMAT : If the tool result is in this format  ** chunk \n Source, url , chunk_id **, 
+        include the answer and the URL as a list like this:
+        FINAL_ANSWER: ["your summary of the answer", "https://example.com"] DONT DEVIATE FROM THIS FORMAT """
+        answer = llm_generate(prompt)
+        print  (f"LLM generated answer: {answer}")
+        mcp_log("INFO", f"LLM generated answer: {answer}")
+
+        return  answer
     except Exception as e:
-        return [f"ERROR: Failed to search: {str(e)}"]
+        return f"ERROR: Failed to perform RAG: {str(e)}"
+
+# def search_documents(query: str) -> list[str]:
+#     """Search for relevant content from uploaded documents."""
+#     ensure_faiss_ready()
+#     mcp_log("SEARCH", f"Query: {query}")
+#     try:
+#         index = faiss.read_index(str(ROOT / "faiss_index" / "index.bin"))
+#         metadata = json.loads((ROOT / "faiss_index" / "metadata.json").read_text())
+#         query_vec = get_embedding(query).reshape(1, -1)
+#         D, I = index.search(query_vec, k=5)
+#         results = []
+#         for idx in I[0]:
+#             data = metadata[idx]
+#             results.append(f"{data['chunk']}\n[Source: {data['doc']}, URL: {data.get('url','')} , ID: {data['chunk_id']}]")
+#         return results
+#     except Exception as e:
+#         return [f"ERROR: Failed to search: {str(e)}"]
 
 @mcp.tool()
 def add(input: AddInput) -> AddOutput:
@@ -233,7 +290,7 @@ def debug_error(error: str) -> list[base.Message]:
         base.AssistantMessage("I'll help debug that. What have you tried so far?"),
     ]
 
-@mcp.tool()
+
 
 @mcp.tool()
 def process_html(url: str, title: str, text: str = ""):
@@ -445,7 +502,7 @@ if __name__ == "__main__":
         "text": open("documents_html/nomic-embed-text.html").read()
         }
         #process_html(test.get("url"),test.get("title"),test.get("text"))
-        #search_documents("What is nomice embeddings?")
+        search_documents("What is nomice embeddings?")
         # Keep the main thread alive
         try:
             while True:
