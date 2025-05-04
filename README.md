@@ -91,12 +91,10 @@ Be fast, private, and smart.
 
 ### 3. `fastapi_redis_server_indexer.py`
 
-**Purpose**: Works similarly to `fastapi_server_indexer.py` but integrates with **Redis** for high-speed, scalable vector storage.
+**Purpose**: Works similarly to `fastapi_server_indexer.py` but integrates with **Redis Queue** for scaling the concurrent input request.
 
 **Rationale for Using Redis**:
-- 🧠 **Memory & Speed**: Redis (via `redis-py` and `redis-vector`) supports **low-latency semantic search** and can store large vector datasets in-memory.
-- 🌐 **Scalability**: Ideal for real-time RAG systems where speed matters.
-- 🔌 **Persistence**: Redis supports optional on-disk persistence and recovery unlike in-memory-only systems.
+- 🌐 **Scalability**: This helps handle concurrent requests that come in rapidly due to the user's fast browsing movements across multiple tabs/browsers
 
 **Endpoint**:
 - `POST /add_to_index` – Index documents into FAISS via Redis for semantic/tag enabled retrieval
