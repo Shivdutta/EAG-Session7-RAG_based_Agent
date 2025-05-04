@@ -57,11 +57,10 @@ Be fast, private, and smart.
 
 ### 2. Chrome_Extension_Session7_Search
 
-**Purpose**: Enables semantic search based on user-highlighted content.
+**Purpose**: Send the entire HTML page content of currrent tab to backed for indexing.
 
 **Features**:
-- Captures highlighted text.
-- Queries the backend and shows context-aware answers.
+- Embedding are generates for entire page
 
 **Files**:
 - `manifest.json` – Permissions and config  
