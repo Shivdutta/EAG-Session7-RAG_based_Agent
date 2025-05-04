@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extension Popup</title>
+  <style>
+    body {
+      width: 300px;
+      height: 200px;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    #status {
+      font-size: 14px;
+      color: green;
+    }
+    #content {
+      font-size: 12px;
+      margin-top: 10px;
+      overflow: auto;
+      max-height: 100px;
+    }
+    button {
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Extension Status</h1>
+  <p id="status">Fetching Data...</p>
+
+  <h2>Latest URL Content:</h2>
+  <div id="content">
+    <p>No content yet.</p>
+  </div>
+
+  <button id="refresh">Refresh Data</button>
+
+  <script>
+    document.getElementById('refresh').addEventListener('click', () => {
+      // Trigger action when the button is clicked
+      chrome.storage.local.get({ visits: [] }, (result) => {
+        if (result.visits.length > 0) {
+          const lastVisit = result.visits[result.visits.length - 1];
+          document.getElementById('status').textContent = 'Data Fetched Successfully!';
+          document.getElementById('content').textContent = lastVisit.text.slice(0, 300) + '...';  // Display first 300 characters
+        } else {
+          document.getElementById('status').textContent = 'No data available.';
+          document.getElementById('content').textContent = 'No content yet.';
+        }
+      });
+    });
+
+    // On popup open, show the latest content if any
+    chrome.storage.local.get({ visits: [] }, (result) => {
+      if (result.visits.length > 0) {
+        const lastVisit = result.visits[result.visits.length - 1];
+        document.getElementById('status').textContent = 'Data Fetched Successfully!';
+        document.getElementById('content').textContent = lastVisit.text.slice(0, 300) + '...';  // Display first 300 characters
+      } else {
+        document.getElementById('status').textContent = 'No data available.';
+        document.getElementById('content').textContent = 'No content yet.';
+      }
+    });
+  </script>
+
+</body>
+</html>
