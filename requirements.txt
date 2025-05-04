@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic
+faiss-cpu
+numpy
+requests
+tqdm
+python-dotenv
+openai
+google-genai>=1.12.1
+markitdown  # Assuming this is your own package or a private/local library
+mcp[cli]>=1.6.0
+redis
+beautifulsoup4
+lxml
+html5lib
