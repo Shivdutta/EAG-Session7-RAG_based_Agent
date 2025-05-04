@@ -31,8 +31,9 @@ Build a cutting-edge Chrome extension that transforms your browser into a contex
 
 Surprise us with something creative and powerful using local or browser-native RAG:
 - 🔄 On-page summarization  
-- 🧠 LLM-powered memory  
-- ⚡ WebAssembly-based agents  
+- 🧠 LLM-powered memory
+- 🌍 RAG based search
+- 🧠 REDIS for scaling concurrent request.
 Be fast, private, and smart.
 
 ---
@@ -76,7 +77,7 @@ Be fast, private, and smart.
 **Purpose**: Handles user queries and returns RAG-generated answers.
 
 **Endpoint**:
-- `POST /query` – Process user questions via the agent
+- `POST /search` – Process user questions via the agent
 
 ---
 
@@ -85,7 +86,7 @@ Be fast, private, and smart.
 **Purpose**: Embeds and indexes uploaded documents.
 
 **Endpoint**:
-- `POST /index` – Add new docs to FAISS or Redis vector store
+- `POST /add_to_index` – Add new docs to FAISS  vector store
 
 ---
 
@@ -99,7 +100,7 @@ Be fast, private, and smart.
 - 🔌 **Persistence**: Redis supports optional on-disk persistence and recovery unlike in-memory-only systems.
 
 **Endpoint**:
-- `POST /redis_index` – Index documents into Redis for semantic retrieval
+- `POST /add_to_index` – Index documents into FAISS via Redis for semantic/tag enabled retrieval
 
 ---
 
@@ -130,7 +131,7 @@ pip install -r requirements.txt
 Create a `.env` file:
 
 ```env
-OPENAI_API_KEY=your_openai_key
+GEMINI_API_KEY=your_openai_key
 REDIS_HOST=localhost
 REDIS_PORT=6379
 ```
@@ -138,23 +139,36 @@ REDIS_PORT=6379
 ### 5. Install & Run Redis
 
 ```bash
-# macOS
-brew install redis
-
 # Ubuntu
-sudo apt-get install redis-server
+refer requirements.txt
 
 # Start server
 redis-server
 ```
-
-### 6. Launch FastAPI Server
+### 6. Launch FastAPI Server(Indexer)
 
 ```bash
-uvicorn fastapi_server:app --reload
+uvicorn fastapi_redis_server_indexer:app --reload --log-level debug --port 8001
 ```
 
-### 7. Load Chrome Extensions
+### 7. Launch MCP Server
+
+```bash
+python mcp_server.py
+```
+### 8. Launch Redis job
+
+```bash
+rq worker mcp-tasks
+```
+
+### 9. Launch FastAPI Server(Search)
+
+```bash
+uvicorn fastapi_server:app --reload --log-level debug --port 8000
+```
+
+### 10. Load Chrome Extensions
 
 1. Go to `chrome://extensions/`
 2. Enable **Developer mode**
@@ -193,20 +207,17 @@ This is the **brain** of the system. It defines a class like `RAGAgent` that:
 ### 📁 `memory.py` – Conversation Memory Management  
 Handles session persistence and continuity.  
 - Tracks previous interactions  
-- Uses Redis or in-memory storage  
+- Uses  in-memory storage  
 - Critical for multi-turn chat context  
 
 **Key features**:  
 - `MemoryBuffer` or `SessionManager` classes  
-- Redis integration for scalable, persistent memory  
 - Enables context carry-over and temporal awareness  
 
 ---
 
 ### 📁 `perception.py` – Input Understanding & Preprocessing  
 Prepares user input before retrieval or generation.  
-- Normalizes and cleans up text  
-- Strips unnecessary HTML  
 - May extract key phrases or topics  
 
 **Impact**: Improves semantic search accuracy and LLM relevance  
@@ -217,7 +228,6 @@ Prepares user input before retrieval or generation.
 Acts as the agent's **planner**:  
 - Determines whether to clarify, search, or answer  
 - Can rank retrieved content or defer decisions  
-- Integrates structured logic or heuristics  
 
 **Example behaviors**:  
 - Follows up on ambiguous queries  
@@ -226,13 +236,9 @@ Acts as the agent's **planner**:
 ---
 
 ### 📁 `action.py` – Execution Layer  
-Interfaces with external systems:  
-- Opens and scrolls web pages  
-- Triggers browser actions or highlights content  
 - Executes commands based on agent decisions  
 
 **Possible actions**:  
-- Navigate and scroll to matched text  
 - Save or pin relevant info  
 
 ---
@@ -256,16 +262,9 @@ Forms the backbone of processes like `Perceive → Chunk → Embed → Store`
 ```python
 search_documents(query: str) -> list[str]
 ```
-
 - Embeds the query  
 - Searches the FAISS index for top matches  
 - Returns context snippets with metadata  
-
-**Example**:  
-```yaml
-"How to install X tool..."
-[Source: guide.md, URL: https://example.com/install, ID: guide_1]
-```
 
 ---
 
