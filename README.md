@@ -4,7 +4,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Type-Chrome_Extension-blue?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Tech-RAG | FAISS | Redis | FastAPI-purple?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Bonus-In_Browser_RAG-red?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Bonus-RAG-red?style=for-the-badge" />
 </p>
 
 ---
@@ -16,7 +16,7 @@ Build a cutting-edge Chrome extension that transforms your browser into a contex
 ### 🔧 Core Features
 
 - 🌍 **Auto-Embedding for Public Pages**  
-  For each non-confidential website you visit (excluding Gmail, WhatsApp, etc.), extract page content and generate **semantic embeddings** using [Nomic Embeddings](https://docs.nomic.ai) or a local model.
+  For each non-confidential website you visit (excluding Gmail, WhatsApp, etc.), extract page content and generate **semantic embeddings** using Gemini Flash model.
 
 - 📦 **Efficient Indexing**  
   Store each embedding with its source URL in a **FAISS index**. You can generate this index locally or via **Google Colab**, and then download the index file for use.
